@@ -72,6 +72,22 @@ The production server runs on port 3000 by default. To use a different port:
 npm start -- -p 8080
 ```
 
+## Testing
+
+Unit tests run on [Vitest](https://vitest.dev/) (jsdom environment, with `@testing-library/react` for the hook tests).
+
+```bash
+npm test          # Run the suite once
+npm run test:watch  # Re-run on change
+```
+
+Coverage spans the core streaming logic:
+
+- **`chatStore`** — send / abort / error lifecycle, `streamingContent` accumulation, abort notification, and selectors
+- **`chatApi`** — request shape, chunk decoding (including multi-byte splits), error paths, and fire-and-forget `notifyAbort`
+- **`/api/chat` & `/api/chat/abort`** — body validation and streaming headers
+- **`useAutoScroll`** — scroll-on-trigger, disable-on-scroll-up, re-enable per turn
+
 ## Other scripts
 
 ```bash
