@@ -29,7 +29,7 @@ src/
 │   └── useAutoScroll.ts
 ├── lib/
 │   ├── streamAssistantResponse.ts  # Mock token generator (server-only)
-│   └── fetchChatStream.ts
+│   └── chatApi.ts                  # Client API: stream fetch + abort notify
 ├── store/
 │   └── chatStore.ts           # Zustand store + exported selectors
 ├── styling/
