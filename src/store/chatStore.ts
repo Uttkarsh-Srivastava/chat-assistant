@@ -1,9 +1,10 @@
 import { create, type StateCreator } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { ChatStore, Message } from '@/types/chat';
-import { fetchChatStream } from '@/lib/fetchChatStream';
+import { fetchChatStream, notifyAbort } from '@/lib/chatApi';
 
 let abortController: AbortController | null = null;
+let streamingAssistantMsgId: string | null = null;
 
 const storeImpl: StateCreator<ChatStore, [], []> = (set, get) => ({
   messages: [],
@@ -30,6 +31,7 @@ const storeImpl: StateCreator<ChatStore, [], []> = (set, get) => ({
 
     abortController = new AbortController();
     const assistantMsgId = crypto.randomUUID();
+    streamingAssistantMsgId = assistantMsgId;
 
     set({
       messages: [...get().messages, userMsg],
@@ -72,12 +74,18 @@ const storeImpl: StateCreator<ChatStore, [], []> = (set, get) => ({
       });
     } finally {
       abortController = null;
+      streamingAssistantMsgId = null;
     }
   },
 
-  /** Cancels the in-flight fetch request, triggering the AbortError path in sendMessage. */
+  /**
+   * Cancels the in-flight fetch request, triggering the AbortError path in
+   * sendMessage, and notifies the server of the abort (fire-and-forget).
+   */
   abortStream: () => {
+    const messageId = streamingAssistantMsgId;
     abortController?.abort();
+    if (messageId) notifyAbort(messageId);
   },
 
   /** Resets the store to its initial empty state. */

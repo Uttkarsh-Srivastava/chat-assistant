@@ -40,3 +40,24 @@ export async function fetchChatStream(
     reader.releaseLock();
   }
 }
+
+/**
+ * Notifies the server that the client aborted an in-flight stream.
+ *
+ * Fire-and-forget: the actual cancellation already happened client-side via
+ * `AbortController`. This POST lets the server log the abort (and, in future,
+ * release any per-message resources). Failures are swallowed so a flaky network
+ * never surfaces an error to the user for an action that already succeeded.
+ *
+ * @param messageId - The id of the assistant message that was being streamed.
+ */
+export function notifyAbort(messageId: string): void {
+  void fetch('/api/chat/abort', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messageId }),
+    keepalive: true,
+  }).catch(() => {
+    /* best-effort; cancellation already happened client-side */
+  });
+}
